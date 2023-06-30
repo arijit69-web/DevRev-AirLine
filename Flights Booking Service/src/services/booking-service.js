@@ -59,7 +59,6 @@ async function createBooking(data) {
         400
       );
     }
-    console.log(error);
     if (error.statusCode == StatusCodes.BAD_REQUEST) {
       throw new AppError(
         // error.message, //Overriding the error message thrown from the destroy(id) function inside the crud-repository file
@@ -81,12 +80,12 @@ async function makePayment(data) {
       data.bookingId,
       transaction
     );
-    // if (bookingDetails.status == BOOKED) {
-    //   throw new AppError(
-    //     "You have already booked your flight! You can't retry the request on a successful Booking ID",
-    //     StatusCodes.BAD_REQUEST
-    //   );
-    // }
+    if (bookingDetails.status == BOOKED) {
+      throw new AppError(
+        "You have already booked your flight! You can't retry the request on a successful Booking ID",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     if (bookingDetails.status == CANCELLED) {
       throw new AppError(
         "Booking session has expired",
@@ -185,7 +184,6 @@ Dev-Rev AirLine
     await transaction.commit();
     return response;
   } catch (error) {
-    console.log(error);
     await transaction.rollback();
     if (error instanceof AppError) throw error;
 
