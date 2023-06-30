@@ -59,6 +59,7 @@ async function createBooking(data) {
         400
       );
     }
+    console.log(error);
     if (error.statusCode == StatusCodes.BAD_REQUEST) {
       throw new AppError(
         // error.message, //Overriding the error message thrown from the destroy(id) function inside the crud-repository file
@@ -80,12 +81,12 @@ async function makePayment(data) {
       data.bookingId,
       transaction
     );
-    if (bookingDetails.status == BOOKED) {
-      throw new AppError(
-        "You have already booked your flight! You can't retry the request on a successful Booking ID",
-        StatusCodes.BAD_REQUEST
-      );
-    }
+    // if (bookingDetails.status == BOOKED) {
+    //   throw new AppError(
+    //     "You have already booked your flight! You can't retry the request on a successful Booking ID",
+    //     StatusCodes.BAD_REQUEST
+    //   );
+    // }
     if (bookingDetails.status == CANCELLED) {
       throw new AppError(
         "Booking session has expired",
@@ -124,6 +125,14 @@ async function makePayment(data) {
       { status: BOOKED },
       transaction
     );
+
+    const flight = await axios.get(
+      `${ServerConfig.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}`
+    );
+    const flightData = flight.data.data;
+    const flightDepartureTime = new Date(flightData.departureTime);
+    const flightArrivalTime = new Date(flightData.arrivalTime);
+
     Queue.sendData({
       recepientEmail: data.userEmail,
       subject: "Flight Booking Confirmation",
@@ -131,29 +140,52 @@ async function makePayment(data) {
 
 We are pleased to inform you that your flight has been successfully booked. We understand the importance of your travel plans, and we are excited to be a part of your journey.
       
-Carry a valid photo ID for security and check-in purposes.
-
-Baggage:
-      
-Please review the baggage allowance for your flight. Exceeding the permitted limits may incur additional charges.
+Booking Details:
+Flight Number: ${flightData.id}
+Departure: ${
+        flightData.departureAirportId
+      } at ${flightDepartureTime.toLocaleString()}
+Arrival: ${flightData.arrivalAirportId} at ${flightArrivalTime.toLocaleString()}
      
-Travel Documents:
-      
-Ensure that you have all the necessary travel documents, such as a valid passport, visa, or any required identification.
-Cancellation or Changes:
-      
-If you need to cancel or make changes to your booking, please contact our customer support team as soon as possible. Applicable fees and conditions may apply.
-We hope you have a pleasant flight experience with us. 
+Passenger Details:
+Email: ${data.userEmail}
+    
+Please note the following important information:
+    
+1. Flight Itinerary:     
+ - Departure: ${
+   flightData.departureAirport.City.name
+ } on ${flightDepartureTime.toLocaleString()}
+ - Arrival: ${
+   flightData.arrivalAirport.City.name
+ } on ${flightArrivalTime.toLocaleString()}
+
+2. Check-in:    
+ - Please arrive at the airport at least 2 Hrs before the scheduled departure time.
+ - Carry a valid photo ID for security and check-in purposes.
+
+3. Baggage:
+ - Please review the baggage allowance for your flight. Exceeding the permitted limits may incur additional charges.
+
+4. Travel Documents:
+ - Ensure that you have all the necessary travel documents, such as a valid passport, visa, or any required identification.
+
+5. Cancellation or Changes:
+ - If you need to cancel or make changes to your booking, please contact our customer support team as soon as possible. Applicable fees and conditions may apply.
+
+ We hope you have a pleasant flight experience with us. Should you have any questions or require further assistance, please do not hesitate to contact our customer support team at devrevairline.support@gmail.com.
       
 Thank you for choosing our services, and we look forward to serving you.
       
 Best regards,
-    
-DevRev | Air`,
+Dev-Rev AirLine
+
+`,
     }); // Queue.sendData() should work asynchronously so no need for `await` here
     await transaction.commit();
     return response;
   } catch (error) {
+    console.log(error);
     await transaction.rollback();
     if (error instanceof AppError) throw error;
 
