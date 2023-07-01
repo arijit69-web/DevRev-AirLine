@@ -19,6 +19,7 @@
     "node-cron": "^3.0.2",
     "sequelize": "^6.31.1",
     "sequelize-cli": "^6.6.0",
+    "stripe": "^12.11.0",
     "winston": "^3.8.2"
   }
 }

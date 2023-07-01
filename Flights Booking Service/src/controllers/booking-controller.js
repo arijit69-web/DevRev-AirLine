@@ -34,6 +34,11 @@ async function makePayment(req, res) {
       totalCost: req.body.totalCost,
       userId: req.body.userId,
       bookingId: req.body.bookingId,
+      name: req.body.name,
+      card_ExpYear: req.body.card_ExpYear,
+      card_ExpMonth: req.body.card_ExpMonth,
+      card_Number: req.body.card_Number,
+      card_CVC: req.body.card_CVC,
       userEmail: req.headers["user-email"],
     });
     inMemDb[idempotencyKey] = idempotencyKey;

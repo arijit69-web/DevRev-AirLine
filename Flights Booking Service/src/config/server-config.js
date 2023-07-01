@@ -6,6 +6,8 @@ module.exports = {
   PORT: process.env.PORT,
   FLIGHT_SERVICE: process.env.FLIGHT_SERVICE,
   PUBSUB_SERVICE: process.env.PUBSUB_SERVICE,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_PUBLIC_KEY: process.env.STRIPE_PUBLIC_KEY,
 };
 
 /*

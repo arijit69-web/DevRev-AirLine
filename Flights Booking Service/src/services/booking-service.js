@@ -8,6 +8,7 @@ const { ServerConfig, Queue } = require("../config");
 const db = require("../models"); // get the db object that gets returned from the models index file - For Transaction
 const AppError = require("../utils/errors/app-error");
 const { Enums } = require("../utils/common");
+const PaymentService = require("./payment-service");
 const { BOOKED, CANCELLED } = Enums.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
@@ -117,6 +118,11 @@ async function makePayment(data) {
         StatusCodes.PAYMENT_REQUIRED
       );
     }
+    const newCustomer = await PaymentService.createNewCustomer(data);
+    data.customer_Id = newCustomer.id;
+    const newCard = await PaymentService.addNewCard(data);
+    data.card_Id = newCard.card;
+    const paymentCharge = await PaymentService.createCharges(data);
 
     // we assume here that payment is successful
     const response = await bookingRepository.update(
@@ -131,11 +137,10 @@ async function makePayment(data) {
     const flightData = flight.data.data;
     const flightDepartureTime = new Date(flightData.departureTime);
     const flightArrivalTime = new Date(flightData.arrivalTime);
-
     Queue.sendData({
       recepientEmail: data.userEmail,
       subject: "Flight Booking Confirmation",
-      text: `Dear User,
+      text: `Dear ${data.name},
 
 We are pleased to inform you that your flight has been successfully booked. We understand the importance of your travel plans, and we are excited to be a part of your journey.
       
@@ -175,15 +180,18 @@ Please note the following important information:
  We hope you have a pleasant flight experience with us. Should you have any questions or require further assistance, please do not hesitate to contact our customer support team at devrevairline.support@gmail.com.
       
 Thank you for choosing our services, and we look forward to serving you.
-      
+
 Best regards,
 Dev-Rev AirLine
 
+Please click on the following link to download your payment receipt :
+${paymentCharge.receipt_url}
 `,
     }); // Queue.sendData() should work asynchronously so no need for `await` here
     await transaction.commit();
-    return response;
+    return paymentCharge;
   } catch (error) {
+    console.log(error);
     await transaction.rollback();
     if (error instanceof AppError) throw error;
 
