@@ -1,6 +1,6 @@
 # DevRev-AirLine
 ## Project Description
-DevRev-AirLine is a resilient and efficient Backend Application specifically developed to manage and handle a wide range of Flight Management, Booking, and Payment operations. It incorporates a Microservice MVC architecture, which guarantees both scalability and availability of the system.
+DevRev-Air, a highly efficient and reliable **Backend Application** responsible for seamlessly managing multiple facets of flight operations, including **flight management**, **booking systems**, **real-time notifications**, and **secure payment** processing. It incorporates a **Microservice MVC architecture**, which guarantees both **scalability** and **availability** of the system.
 
 
 ## Non-Functional Requirements
