@@ -17,7 +17,12 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       // One user can have many roles -> Many to Many Associations | Through Table is User_Roles | Eg. 1 user can get `m` no. of roles i.e. When he works in the Airline Company, he is the ADMIN, CUSTOMER, and FLIGHT COMPANY
-      this.belongsToMany(models.Role, { through: "User_Roles", as: "role" });
+      this.belongsToMany(models.Role, {
+        through: "User_Roles",
+        as: "role",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
   User.init(

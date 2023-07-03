@@ -22,6 +22,7 @@ module.exports = {
           key: "id", // id column of Airports table/model
         },
         onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       departureAirportId: {
         // Foreign Key
@@ -33,6 +34,7 @@ module.exports = {
           key: "code", // code column of Airports table/model
         },
         onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       arrivalAirportId: {
         // Foreign Key
@@ -44,6 +46,7 @@ module.exports = {
           key: "code", // code column of Airports table/model
         },
         onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       arrivalTime: {
         type: Sequelize.DATE,

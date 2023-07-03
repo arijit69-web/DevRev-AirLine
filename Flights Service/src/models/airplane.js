@@ -19,11 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         // An Airplane has many Flights
         foreignKey: "airplaneId",
         onDelete: "CASCADE",
-      });
-      // An Airplane has many Seats
-      this.hasMany(models.Seat, {
-        foreignKey: 'airplaneId',
-        onDelete: 'CASCADE'
+        onUpdate: "CASCADE",
       });
     }
   }

@@ -34,6 +34,7 @@ async function checkAuth(req, res, next) {
       // if no error actually happened
       req.user = response.id; // setting the user id inside the req object's user property | Downstream/internal APIs use this to identify that the incoming request is the authenticated one and who the actual user is.
       req.headers["user-email"] = response.email;
+      req.headers["user-id"] = response.id;
       next();
     }
   } catch (error) {
