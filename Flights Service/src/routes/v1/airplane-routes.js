@@ -11,6 +11,7 @@ URL : /api/v1/airplanes/
 router.post(
   "/",
   AirplaneMiddlewares.validateCreateRequest,
+  AirplaneMiddlewares.validateSeats,
   AirplaneController.createAirplane
 ); // So whenever you come to this request, you will first validate this request using the middleware `AirplaneMiddlewares.validateCreateRequest` and then u will create the request using the `AirplaneController.createAirplane` controller.
 
