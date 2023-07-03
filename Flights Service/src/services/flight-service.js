@@ -124,9 +124,30 @@ async function updateSeats(data) {
   }
 }
 
+async function destroyFlight(id) {
+  try {
+    const response = await flightRepository.destroy(id);
+    return response;
+  } catch (error) {
+    if (error.statusCode == StatusCodes.NOT_FOUND) {
+      throw new AppError(
+        // error.message, //Overriding the error message thrown from the destroy(id) function inside the crud-repository file
+        "For the request you made, there is no flight available to delete!",
+        error.statusCode
+      );
+    }
+    throw new AppError(
+      `The flight's data cannot be destroyed!`,
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+
 module.exports = {
   createFlight,
   getAllFlights,
   getFlight,
   updateSeats,
+  destroyFlight
 };

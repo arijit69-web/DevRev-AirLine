@@ -13,6 +13,8 @@ router.post(
 
 router.delete("/:id", CityController.destroyCity);
 
+router.get("/", CityController.getCities);
+
 router.patch(
   "/:id",
   CityMiddlewares.validateUpdateRequest,

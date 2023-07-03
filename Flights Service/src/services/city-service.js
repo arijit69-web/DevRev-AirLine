@@ -75,8 +75,22 @@ async function updateCity(id, data) {
     );
   }
 }
+
+async function getCities() {
+  try {
+    const cities = await cityRepository.getAll();
+    return cities;
+  } catch (error) {
+    throw new AppError(
+      "Data for all cities cannot be retrieved!",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
 module.exports = {
   createCity,
   destroyCity,
   updateCity,
+  getCities,
 };
