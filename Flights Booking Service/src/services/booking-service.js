@@ -111,13 +111,8 @@ async function makePayment(data) {
         StatusCodes.NOT_FOUND
       );
     }
-    if (bookingDetails.totalCost != data.totalCost) {
-      // The payment that we have made does not match the booking payment
-      throw new AppError(
-        "There is a discrepancy in the amount of the payment",
-        StatusCodes.PAYMENT_REQUIRED
-      );
-    }
+    
+    data.totalCost = bookingDetails.totalCost;
     const newCustomer = await PaymentService.createNewCustomer(data);
     data.customer_Id = newCustomer.id;
     const newCard = await PaymentService.addNewCard(data);
@@ -191,7 +186,6 @@ ${paymentCharge.receipt_url}
     await transaction.commit();
     return paymentCharge;
   } catch (error) {
-    console.log(error);
     await transaction.rollback();
     if (error instanceof AppError) throw error;
 

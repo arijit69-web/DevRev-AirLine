@@ -25,7 +25,7 @@ router.get(
 router.get("/:id", FlightController.getFlight);
 
 router.patch(
-  "/:id/seats", // Update the seats of the flight having id as :id
+  "/:id/seats", // Update the seats of the flight having id as :id | Request coming from Flights booking Service [cancelOldBookings()]
   FlightMiddlewares.validateUpdateSeatsRequest,
   FlightController.updateSeats
 );

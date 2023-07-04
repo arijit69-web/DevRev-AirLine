@@ -31,7 +31,6 @@ async function makePayment(req, res) {
     }
 
     const response = await BookingService.makePayment({
-      totalCost: req.body.totalCost,
       userId: req.headers["user-id"],
       bookingId: req.body.bookingId,
       name: req.body.name,

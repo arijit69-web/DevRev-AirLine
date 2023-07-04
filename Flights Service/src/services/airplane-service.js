@@ -4,6 +4,7 @@
 */
 
 const { AirplaneRepository } = require("../repositories/");
+const { error } = require("../utils/common/error-response");
 const AppError = require("../utils/errors/app-error");
 const { StatusCodes } = require("http-status-codes");
 
