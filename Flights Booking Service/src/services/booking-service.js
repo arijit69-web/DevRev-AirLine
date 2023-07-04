@@ -111,7 +111,7 @@ async function makePayment(data) {
         StatusCodes.NOT_FOUND
       );
     }
-    
+
     data.totalCost = bookingDetails.totalCost;
     const newCustomer = await PaymentService.createNewCustomer(data);
     data.customer_Id = newCustomer.id;
@@ -305,12 +305,38 @@ async function getAllFlights(data) {
   }
 }
 
+async function getBookings(data) {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const response = await bookingRepository.getBookings(
+      data.userId,
+      transaction
+    );
+    for (let key in response) {
+      const flightId = response[key].flightId;
+      const flight = await axios.get(
+        `${ServerConfig.FLIGHT_SERVICE}/api/v1/flights/${flightId}`
+      );
+      response[key].dataValues.flight = flight.data.data;
+    }
+    await transaction.commit();
+    return response;
+  } catch (error) {
+    await transaction.rollback();
+    throw new AppError(
+      "Sorry! The Booking was not successful. Booking Service is down",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
 module.exports = {
   createBooking,
   makePayment,
   cancelBooking,
   cancelOldBookings,
   getAllFlights,
+  getBookings,
 };
 
 // Link for Transactions -> https://sequelize.org/docs/v6/other-topics/transactions/

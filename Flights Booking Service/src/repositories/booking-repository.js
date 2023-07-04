@@ -14,6 +14,15 @@ class BookingRepository extends CrudRepository {
     const response = await Booking.create(data, { transaction: transaction });
     return response;
   }
+  async getBookings(data, transaction) {
+    const response = await Booking.findAll({
+      where: {
+        userId: data,
+      },
+      transaction: transaction,
+    });
+    return response;
+  }
   async get(data, transaction) {
     // Override the get() function inside the crud-repository
     const response = await Booking.findByPk(data, { transaction: transaction });
