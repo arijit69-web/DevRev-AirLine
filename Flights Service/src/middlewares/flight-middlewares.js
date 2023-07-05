@@ -89,7 +89,7 @@ function validateDateTime(req, res, next) {
   if (!DateTimeCompare.compareTime(flightArrivalTime, flightDepartureTime)) {
     ErrorResponse.message = "Failed to create a Flight";
     ErrorResponse.error = new AppError(
-      ["The Departure Time must be less than the Arrival Time"],
+      ["The Departure Time must be less than the Arrival Time | There should be a minimum 24 hours of gap between the Current Time and the Departure Time of the Flight"],
       StatusCodes.BAD_REQUEST
     );
     return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse);
