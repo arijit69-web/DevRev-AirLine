@@ -47,7 +47,7 @@ async function addRoleToUser(req, res) {
   try {
     const user = await UserService.addRoletoUser({
       role: req.body.role,
-      id: req.body.id,
+      userId: req.body.userId,
     });
     SuccessResponse.data = user;
     return res.status(StatusCodes.CREATED).json(SuccessResponse);

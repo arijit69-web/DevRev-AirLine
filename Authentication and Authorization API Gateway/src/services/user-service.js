@@ -2,13 +2,13 @@ const { StatusCodes } = require("http-status-codes");
 const { UserRepository, RoleRepository } = require("../repositories");
 const AppError = require("../utils/errors/app-error");
 const { Auth, Enums } = require("../utils/common");
-const userRepo = new UserRepository();
-const roleRepo = new RoleRepository();
+const userRepository = new UserRepository();
+const roleRepository = new RoleRepository();
 
 async function signup(data) {
   try {
-    const user = await userRepo.create(data);
-    const role = await roleRepo.getRoleByName(Enums.USER_ROLES_ENUMS.CUSTOMER); // Users should sign up only as customers and receive the admin/flight company roles via admin only
+    const user = await userRepository.create(data);
+    const role = await roleRepository.getRoleByName(Enums.USER_ROLES_ENUMS.CUSTOMER); // Users should sign up only as customers and receive the admin/flight company roles via admin only
     user.addRole(role); // addRole() is a magic method inside sequelize | LINK -> https://medium.com/@julianne.marik/sequelize-associations-magic-methods-c72008db91c9
     return user;
   } catch (error) {
@@ -30,7 +30,7 @@ async function signup(data) {
 }
 async function signin(data) {
   try {
-    const user = await userRepo.getUserByEmail(data.email);
+    const user = await userRepository.getUserByEmail(data.email);
     if (!user) {
       // check if the user exists/not
       throw new AppError(
@@ -59,7 +59,7 @@ async function isAuthenticated(token) {
       throw new AppError("Missing JWT Token", StatusCodes.BAD_REQUEST);
     }
     const response = Auth.verifyToken(token);
-    const user = await userRepo.get(response.id);
+    const user = await userRepository.get(response.id);
     if (!user) {
       // Suppose the user account is deleted and the hacker is trying to pretend to be the user, so check if the user id is present in the database or not.
       throw new AppError(
@@ -85,14 +85,14 @@ async function isAuthenticated(token) {
 
 async function addRoletoUser(data) {
   try {
-    const user = await userRepo.get(data.id);
+    const user = await userRepository.get(data.userId);
     if (!user) {
       throw new AppError(
-        "For the given id, no users were found",
+        "For the given User ID, no users were found",
         StatusCodes.NOT_FOUND
       );
     }
-    const role = await roleRepo.getRoleByName(data.role);
+    const role = await roleRepository.getRoleByName(data.role);
     if (!role) {
       throw new AppError("The role could not be found", StatusCodes.NOT_FOUND);
     }
@@ -108,14 +108,14 @@ async function addRoletoUser(data) {
 }
 async function isAdmin(id) {
   try {
-    const user = await userRepo.get(id);
+    const user = await userRepository.get(id);
     if (!user) {
       throw new AppError(
         "For the given id, no users were found",
         StatusCodes.NOT_FOUND
       );
     }
-    const adminrole = await roleRepo.getRoleByName(
+    const adminrole = await roleRepository.getRoleByName(
       Enums.USER_ROLES_ENUMS.ADMIN
     );
 
@@ -131,14 +131,14 @@ async function isAdmin(id) {
 
 async function isFlightCompany(id) {
   try {
-    const user = await userRepo.get(id);
+    const user = await userRepository.get(id);
     if (!user) {
       throw new AppError(
         "For the given id, no users were found",
         StatusCodes.NOT_FOUND
       );
     }
-    const flight_companyrole = await roleRepo.getRoleByName(
+    const flight_companyrole = await roleRepository.getRoleByName(
       Enums.USER_ROLES_ENUMS.FLIGHT_COMPANY
     );
 

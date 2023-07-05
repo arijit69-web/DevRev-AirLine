@@ -53,8 +53,29 @@ async function isAdmin(req, res, next) {
 
   next();
 }
+
+function validateAddRoleRequest(req, res, next) {
+  if (!req.body.role) {
+    ErrorResponse.message = "Failed to authenticate the user";
+    ErrorResponse.error = new AppError(
+      ["The Role was not found in the incoming request"],
+      StatusCodes.BAD_REQUEST
+    );
+    return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse);
+  }
+  if (!req.body.userId) {
+    ErrorResponse.message = "Failed to authenticate the user";
+    ErrorResponse.error = new AppError(
+      ["The User ID was not found in the incoming request"],
+      StatusCodes.BAD_REQUEST
+    );
+    return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse);
+  }
+  next();
+}
 module.exports = {
   validateAuthRequest,
   checkAuth,
   isAdmin,
+  validateAddRoleRequest,
 };
