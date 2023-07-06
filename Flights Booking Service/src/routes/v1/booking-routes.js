@@ -17,5 +17,6 @@ router.post(
   BookingController.makePayment
 );
 router.get("/searchFlights", BookingController.getAllFlights);
+router.post("/cancel", BookingController.cancelBookingRequest);
 
 module.exports = router;

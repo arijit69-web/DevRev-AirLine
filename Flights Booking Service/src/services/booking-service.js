@@ -3,15 +3,19 @@ const axios = require("axios");
 Axios is a promise-based HTTP library that lets developers make requests to either their own or a third-party server to fetch data. It offers different ways of making requests such as GET , POST , PUT/PATCH , and DELETE .
 */
 const { StatusCodes } = require("http-status-codes");
-const { BookingRepository } = require("../repositories");
+const {
+  BookingRepository,
+  CancelBookingRepository,
+} = require("../repositories");
 const { ServerConfig, Queue } = require("../config");
 const db = require("../models"); // get the db object that gets returned from the models index file - For Transaction
 const AppError = require("../utils/errors/app-error");
 const { Enums } = require("../utils/common");
 const PaymentService = require("./payment-service");
-const { BOOKED, CANCELLED } = Enums.BOOKING_STATUS;
+const { BOOKED, CANCELLED, INITIATED } = Enums.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
+const cancelBookingRepository = new CancelBookingRepository();
 
 async function createBooking(data) {
   /*
@@ -330,6 +334,99 @@ async function getBookings(data) {
   }
 }
 
+async function cancelBookingRequest(data) {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const bookingDetails = await bookingRepository.get(
+      data.bookingId,
+      transaction
+    );
+    if (bookingDetails.status == CANCELLED) {
+      throw new AppError(
+        "It is not possible to retry the request on a Cancelled Booking",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    if (bookingDetails.status == INITIATED) {
+      throw new AppError(
+        "There is no way to Cancel the Booking since it has not yet been made",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    await axios.patch(
+      `${ServerConfig.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}/seats`,
+      {
+        seats: bookingDetails.noOfSeats,
+        dec: false,
+      }
+    );
+    await bookingRepository.update(
+      data.bookingId,
+      { status: CANCELLED },
+      transaction
+    );
+    const cancelBooking = await cancelBookingRepository.cancelBooking(
+      data,
+      transaction
+    );
+    const flight = await axios.get(
+      `${ServerConfig.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}`
+    );
+    const flightData = flight.data.data;
+    const flightDepartureTime = new Date(flightData.departureTime);
+
+    Queue.sendData({
+      recepientEmail: data.userEmail,
+      subject: "Flight Cancellation Confirmation",
+      text: `Dear ${data.name},
+
+We hope this email finds you well. We would like to confirm that your flight reservation has been successfully canceled as per your request. 
+
+Below are the details of your canceled flight reservation:
+      
+Passenger Name: ${data.name}
+Booking Reference Number: ${data.bookingId}
+Flight Number: ${flightData.id}
+Departure Date:  ${flightDepartureTime.toLocaleString()}
+Departure Airport: ${flightData.departureAirport.name}
+Destination Airport:  ${flightData.arrivalAirport.name}
+
+We have processed your cancellation request, and we understand that circumstances can change unexpectedly, leading to the need for a flight cancellation. While we regret that you won't be able to travel with us on the scheduled date, we appreciate your cooperation in informing us promptly.
+
+Regarding your refund, we are pleased to inform you that you are eligible for a refund in accordance with the fare conditions associated with your ticket. Our refund department will initiate the refund process, which may take a few business days to reflect in your account. Please note that the refund amount may be subject to any applicable fees or charges as per the fare rules.
+
+We understand that having a written confirmation of the flight cancellation is essential for your records. Attached to this email, you will find a confirmation document outlining the cancellation details and refund information. Please review it carefully, and if you have any questions or require further clarification, feel free to contact our customer service team at devrevairline.support@gmail.com. They will be more than happy to assist you.
+
+Once again, we apologize for any inconvenience caused by the cancellation. We value your patronage and hope to serve you in the future under more favorable circumstances. If there is anything else we can assist you with, please do not hesitate to reach out to us.
+
+Thank you for choosing Dev-Rev AirLine. We appreciate your understanding and cooperation.
+
+Best regards,
+Dev-Rev AirLine
+
+`,
+    }); // Queue.sendData() should work asynchronously so no need for `await` here
+
+    await transaction.commit();
+    return cancelBooking;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    await transaction.rollback();
+    if (error.statusCode == StatusCodes.NOT_FOUND) {
+      throw new AppError(
+        // error.message, //Overriding the error message thrown from the destroy(id) function inside the crud-repository file
+        "For the request you made, there is no bookingId available to cancel!",
+        error.statusCode
+      );
+    }
+    throw new AppError(
+      "Sorry! The Cancellation was unsuccessful. Cancellation Service is down",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
 module.exports = {
   createBooking,
   makePayment,
@@ -337,6 +434,7 @@ module.exports = {
   cancelOldBookings,
   getAllFlights,
   getBookings,
+  cancelBookingRequest,
 };
 
 // Link for Transactions -> https://sequelize.org/docs/v6/other-topics/transactions/

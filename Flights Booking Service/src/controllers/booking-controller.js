@@ -70,10 +70,28 @@ async function getBookings(req, res) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse);
   }
 }
+async function cancelBookingRequest(req, res) {
+  try {
+    const response = await BookingService.cancelBookingRequest({
+      bookingId: req.body.bookingId,
+      name: req.body.name,
+      phoneNo: req.body.phoneNo,
+      accountNo: req.body.accountNo,
+      ifsc: req.body.ifsc,
+      userEmail: req.headers["user-email"],
+    });
+    SuccessResponse.data = response;
+    return res.status(StatusCodes.OK).json(SuccessResponse);
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse);
+  }
+}
 
 module.exports = {
   createBooking,
   makePayment,
   getAllFlights,
   getBookings,
+  cancelBookingRequest,
 };
