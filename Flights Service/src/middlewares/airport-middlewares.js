@@ -35,7 +35,7 @@ function validateCreateRequest(req, res, next) {
 
 function validateUpdateRequest(req, res, next) {
   if (Object.keys(req.body).length === 0) {
-    ErrorResponse.message = "Failed to update an Airplane";
+    ErrorResponse.message = "Failed to update an Airport";
     ErrorResponse.error = new AppError(
       ["The Data was not found in the incoming request"],
       StatusCodes.BAD_REQUEST

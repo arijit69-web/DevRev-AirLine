@@ -56,7 +56,7 @@ async function isAdmin(req, res, next) {
 
 function validateAddRoleRequest(req, res, next) {
   if (!req.body.role) {
-    ErrorResponse.message = "Failed to authenticate the user";
+    ErrorResponse.message = "Failed to add a role to the user";
     ErrorResponse.error = new AppError(
       ["The Role was not found in the incoming request"],
       StatusCodes.BAD_REQUEST
@@ -64,7 +64,7 @@ function validateAddRoleRequest(req, res, next) {
     return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse);
   }
   if (!req.body.userId) {
-    ErrorResponse.message = "Failed to authenticate the user";
+    ErrorResponse.message = "Failed to add a role to the user";
     ErrorResponse.error = new AppError(
       ["The User ID was not found in the incoming request"],
       StatusCodes.BAD_REQUEST
